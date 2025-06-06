@@ -23,7 +23,7 @@ class _LoginPageState extends State<LoginPage> {
     setState(() => loading = true);
 
     final response = await http.post(
-      Uri.parse("http://192.168.98.164:8000/api/login"),
+      Uri.parse("http://192.168.60.164:8000/api/login"),
       headers: {"Content-Type": "application/json"},
       body: jsonEncode({
         "email": emailController.text,
@@ -48,14 +48,23 @@ class _LoginPageState extends State<LoginPage> {
       );
 
       if (role == 'pembeli') {
+        final pembeliData = data['user'];
+        final idPembeli = pembeliData['id_pembeli'];
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => const PembeliDashboard()),
+          MaterialPageRoute(
+            builder: (_) => PembeliDashboard(idPembeli: idPembeli),
+          ),
         );
       } else if (role == 'penitip') {
+        final penitipData = data['user'];
+        final idPenitip = penitipData['id_penitip'];
+
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => const PenitipDashboard()),
+          MaterialPageRoute(
+            builder: (_) => PenitipDashboard(idPenitip: idPenitip),
+          ),
         );
       } else if (role == 'pegawai') {
         print("Role is 'pegawai'. Checking jabatan: '$jabatan'");
