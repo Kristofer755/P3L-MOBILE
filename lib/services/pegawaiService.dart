@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:reuse_mart/model/Pegawai.dart';
 
 class PegawaiService {
-  final String apiUrl = 'http://192.168.60.164:8000/api/pegawai/kurir-hunter';
+  final String apiUrl = 'http://192.168.245.164:8000/api/pegawai/kurir-hunter';
 
   Future<List<Pegawai>> fetchPegawai() async {
     final response = await http.get(Uri.parse(apiUrl));

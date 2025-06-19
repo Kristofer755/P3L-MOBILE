@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:http/http.dart' as http;
@@ -15,12 +16,26 @@ class _PenitipDashboardState extends State<PenitipDashboard> {
   late FlutterLocalNotificationsPlugin localNotif;
   List<Map<String, dynamic>> notifList = [];
   String? notifRawResponse;
+  Timer? _pollingTimer;
+
+  final _baseUrl = 'http://192.168.245.164:8000/api';
 
   @override
   void initState() {
     super.initState();
     setupNotif();
-    fetchNotif();
+    fetchNotif(); // langsung cek sekali saat init
+    // polling tiap 30 detik
+    _pollingTimer = Timer.periodic(
+      const Duration(seconds: 30),
+      (_) => fetchNotif(),
+    );
+  }
+
+  @override
+  void dispose() {
+    _pollingTimer?.cancel();
+    super.dispose();
   }
 
   void setupNotif() {
@@ -31,7 +46,7 @@ class _PenitipDashboardState extends State<PenitipDashboard> {
     localNotif.initialize(initSettings);
   }
 
-  void showNotification(String title, String message) async {
+  Future<void> showNotification(String title, String message) async {
     const androidDetails = AndroidNotificationDetails(
       'notif_channel_id',
       'Notif Penitip',
@@ -39,57 +54,52 @@ class _PenitipDashboardState extends State<PenitipDashboard> {
       importance: Importance.max,
       priority: Priority.high,
     );
-    const notifDetails = NotificationDetails(android: androidDetails);
-
-    await localNotif.show(
-      0,
-      title,
-      message,
-      notifDetails,
-    );
+    final notifDetails = NotificationDetails(android: androidDetails);
+    await localNotif.show(0, title, message, notifDetails);
   }
 
   Future<void> fetchNotif() async {
-    final url =
-        'http://192.168.60.164:8000/api/notif-penitip/${widget.idPenitip}';
+    final url = '$_baseUrl/notif-penitip/${widget.idPenitip}';
     try {
       final response = await http.get(Uri.parse(url));
-      setState(() {
-        notifRawResponse = response.body;
-      });
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        if (data is List) {
-          // Tampilkan notifikasi lokal HANYA untuk notifikasi paling baru
-          if (data.isNotEmpty) {
-            showNotification(data[0]['judul'], data[0]['pesan']);
-          }
+
+      // simpan raw
+      if (mounted) {
+        setState(() => notifRawResponse = response.body);
+      }
+
+      if (response.statusCode == 200 && response.body != 'null') {
+        final data = json.decode(response.body) as Map<String, dynamic>;
+
+        // tampilkan notif
+        await showNotification(data['judul'], data['pesan']);
+
+        // update UI
+        if (mounted) {
           setState(() {
-            notifList = List<Map<String, dynamic>>.from(data);
+            notifList = [data];
           });
-        } else if (data is Map &&
-            data['judul'] != null &&
-            data['pesan'] != null) {
-          // Jika response masih objek tunggal, fallback ke tampilan satu notif
-          showNotification(data['judul'], data['pesan']);
-          setState(() {
-            notifList = [Map<String, dynamic>.from(data)];
-          });
-        } else {
+        }
+
+        // tandai sudah dibaca
+        await http
+            .post(Uri.parse('$_baseUrl/notif-penitip/read/${data['id']}'));
+      } else {
+        // tidak ada notifikasi baru
+        if (mounted) {
           setState(() {
             notifList = [];
           });
         }
       }
     } catch (e) {
-      setState(() {
-        notifList = [
-          {
-            'judul': "Error",
-            'pesan': e.toString(),
-          }
-        ];
-      });
+      if (mounted) {
+        setState(() {
+          notifList = [
+            {'judul': 'Error', 'pesan': e.toString()}
+          ];
+        });
+      }
     }
   }
 

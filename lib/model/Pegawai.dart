@@ -1,4 +1,5 @@
 class Pegawai {
+  final String idPegawai;
   final String nama;
   final String email;
   final String noTelp;
@@ -7,6 +8,7 @@ class Pegawai {
   final String tglLahir;
 
   Pegawai({
+    required this.idPegawai,
     required this.nama,
     required this.email,
     required this.noTelp,
@@ -17,6 +19,7 @@ class Pegawai {
 
   factory Pegawai.fromJson(Map<String, dynamic> json) {
     return Pegawai(
+      idPegawai: json['id_pegawai'],
       nama: json['nama_pegawai'],
       email: json['email'],
       noTelp: json['no_telp'],

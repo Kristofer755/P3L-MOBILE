@@ -52,21 +52,32 @@ class _PembeliDashboardState extends State<PembeliDashboard> {
 
   Future<void> fetchNotif() async {
     final url =
-        'http://192.168.60.164:8000/api/notif-pembeli/${widget.idPembeli}';
+        'http://192.168.245.164:8000/api/notif-pembeli/${widget.idPembeli}';
     try {
       final response = await http.get(Uri.parse(url));
       setState(() {
         notifRawResponse = response.body;
       });
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        if (data != null && data['judul'] != null && data['pesan'] != null) {
+
+      // Cek kalau ada notifikasi baru (controller kembalikan null jika gak ada)
+      if (response.statusCode == 200 && response.body != 'null') {
+        final data = json.decode(response.body) as Map<String, dynamic>;
+
+        // Hanya jika ada field 'id' artinya ada notifikasi
+        if (data['id'] != null) {
+          // Update UI
           setState(() {
             notifTitle = data['judul'];
             notifMessage = data['pesan'];
           });
-          // Tampilkan notifikasi lokal di device
+
+          // Tampilkan local notification
           showNotification(data['judul'], data['pesan']);
+
+          // Tandai sudah dibaca
+          await http.post(Uri.parse(
+            'http://192.168.252.164:8000/api/notif-pembeli/read/${data['id']}',
+          ));
         }
       }
     } catch (e) {
