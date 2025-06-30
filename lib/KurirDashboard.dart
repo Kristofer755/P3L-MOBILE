@@ -25,7 +25,7 @@ class _KurirDashboardState extends State<KurirDashboard> {
 
   Future<List<Pengiriman>> fetchPengiriman() async {
     final uri = Uri.parse(
-      'http://192.168.245.164:8000/api/pengiriman'
+      'http://192.168.100.10:8000/api/pengiriman'
       '?tipe_pengiriman=kurir'
       '&id_pegawai=${widget.pegawai.idPegawai}',
     );
@@ -43,7 +43,7 @@ class _KurirDashboardState extends State<KurirDashboard> {
 
   Future<void> _markAsDone(String idPengiriman) async {
     final uri =
-        Uri.parse('http://192.168.245.164:8000/api/pengiriman/$idPengiriman');
+        Uri.parse('http://192.168.100.10:8000/api/pengiriman/$idPengiriman');
 
     try {
       final response = await http.patch(

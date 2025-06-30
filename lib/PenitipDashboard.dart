@@ -18,7 +18,7 @@ class _PenitipDashboardState extends State<PenitipDashboard> {
   String? notifRawResponse;
   Timer? _pollingTimer;
 
-  final _baseUrl = 'http://192.168.245.164:8000/api';
+  final _baseUrl = 'http://192.168.100.10:8000/api';
 
   @override
   void initState() {

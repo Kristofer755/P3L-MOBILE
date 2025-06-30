@@ -52,7 +52,7 @@ class _PembeliDashboardState extends State<PembeliDashboard> {
 
   Future<void> fetchNotif() async {
     final url =
-        'http://192.168.245.164:8000/api/notif-pembeli/${widget.idPembeli}';
+        'http://192.168.100.10:8000/api/notif-pembeli/${widget.idPembeli}';
     try {
       final response = await http.get(Uri.parse(url));
       setState(() {
@@ -76,7 +76,7 @@ class _PembeliDashboardState extends State<PembeliDashboard> {
 
           // Tandai sudah dibaca
           await http.post(Uri.parse(
-            'http://192.168.252.164:8000/api/notif-pembeli/read/${data['id']}',
+            'http://192.168.100.10:8000/api/notif-pembeli/read/${data['id']}',
           ));
         }
       }
